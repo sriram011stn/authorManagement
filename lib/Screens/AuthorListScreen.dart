@@ -4,7 +4,6 @@ import '../WidgetManager/InputSearchWidget.dart';
 import '../WidgetManager/CardWidget.dart';
 import '../Data/AuthorListScreenData.dart';
 
-
 AuthorListScreenData authorListScreenData = AuthorListScreenData();
 
 class AuthorListScreen extends StatefulWidget {
@@ -16,28 +15,50 @@ class AuthorListScreen extends StatefulWidget {
 
 class _AuthorListScreenState extends State<AuthorListScreen> {
 
-  late Future<dynamic> obtainedResponse;
+  late Future<dynamic> responseObtained;
 
   List<dynamic> responseObject = [];
-
   List<dynamic> displayObject = [];
 
+  bool isSearched = false;
+
   String searchInput = "";
+  String id = "";
 
   @override
   void initState() {
-    // TODO: implement initState
-    obtainedResponse = initiateAuthorDetailsData();
+    responseObtained = initiateAuthorDetailsData();
     super.initState();
   }
 
   initiateAuthorDetailsData() async{
     await authorListScreenData.authorDetails().then((value) => responseObject = value);
+    displayObject = responseObject;
   }
 
-  callback(inputValue){
+  searchCallback(inputValue){
     searchInput = inputValue;
-
+    if(searchInput == ""){
+      setState(() {
+        displayObject = responseObject;
+        isSearched = false;
+      });
+    }
+    else{
+      setState(() {
+        displayObject = responseObject.where((e) => e["author"]["name"].toString().toLowerCase().contains(searchInput.toLowerCase()) == true).toList();
+      });
+      isSearched = true;
+    }
+  }
+  
+  deleteCallback(id) {
+    if(id != ""){
+      setState(() {
+        responseObject = responseObject.where((element) => element["id"].toString() != id).toList();
+        displayObject = responseObject;
+      });
+    }
   }
 
   @override
@@ -49,9 +70,45 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
             body: SafeArea(
                 child: Column(
                   children: [
-                    InputSearchWidget(callback),
+                    InputSearchWidget(searchCallback),
+                    isSearched ? Container(
+                      margin : EdgeInsets.only(bottom: 10.0),
+                      height: MediaQuery.of(context).size.height * 0.05,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Expanded(
+                              child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text("Search Results",
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold
+                                      )
+                                  )
+                              ),
+                            ),
+                            Expanded(
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text("${displayObject.length} found",
+                                    style: TextStyle(
+                                      color: Colors.redAccent,
+                                        fontWeight: FontWeight.bold
+                                    ),
+                                  )
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                        :
+                    Container() ,
                     FutureBuilder(
-                        future:obtainedResponse,
+                        future:responseObtained,
                         builder: (context,snapshot)
                         {
                           if(snapshot.connectionState == ConnectionState.none){
@@ -70,7 +127,7 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
                             );
                           }
                           else if(snapshot.connectionState == ConnectionState.done){
-                            if(responseObject.isEmpty ){
+                            if(displayObject.isEmpty ){
                               return  Expanded(
                                   child:  Container(
                                     child: Center(
@@ -82,9 +139,9 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
                             else{
                               return  Expanded(
                                   child: ListView.builder(
-                                      itemCount: responseObject.length,
+                                      itemCount: displayObject.length,
                                       itemBuilder: (context,index) {
-                                        return CardWidget(responseObject[index]);
+                                        return CardWidget(displayObject[index],deleteCallback);
                                       }
                                   )
                               );

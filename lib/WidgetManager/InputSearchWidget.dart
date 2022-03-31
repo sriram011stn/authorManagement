@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class InputSearchWidget extends StatefulWidget {
-  Function callback;
-  InputSearchWidget(this.callback,{Key? key}) : super(key: key);
+  Function searchCallback;
+  InputSearchWidget(this.searchCallback,{Key? key}) : super(key: key);
 
   @override
   State<InputSearchWidget> createState() => _InputSearchWidgetState();
@@ -19,7 +19,7 @@ class _InputSearchWidgetState extends State<InputSearchWidget> {
       width: MediaQuery.of(context).size.width,
       padding: EdgeInsets.only(
           top: 5.0 ,
-          bottom: 5.0,
+          bottom: 0.0,
           left: 0.0,
           right: 0.0
       ),
@@ -29,7 +29,7 @@ class _InputSearchWidgetState extends State<InputSearchWidget> {
           child: TextField(
             controller: searchValue,
             onChanged: (searchValue) {
-              widget.callback(searchValue);
+              widget.searchCallback(searchValue);
             },
             keyboardType: TextInputType.text,
             style: const TextStyle(
@@ -41,24 +41,9 @@ class _InputSearchWidgetState extends State<InputSearchWidget> {
                 filled: true,
                 fillColor: Colors.grey[150],
                 contentPadding: const EdgeInsets.only(left: 30),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-                  iconSize: 25,
+                suffixIcon: Icon(Icons.search,
+                  size: 25,
                   color: Colors.black38,
-                  //color: widgetManagerEngine.getColorForWidget(WidgetManagerColors.WIDGET_MANAGER_CONSTANTS_TEAL),
-                  onPressed: () {
-                    // if( searchValue.text != ""){
-                    //   widget.callback("");
-                    //   setState(() {
-                    //     searchValue.clear();
-                    //   });
-                    // }
-                    // else{
-                    //   setState(() {
-                    //     searchValue.clear();
-                    //   });
-                    // }
-                  },
                 ),
                 hintText:"Search...",
                 hintStyle: TextStyle(fontSize: 15),
